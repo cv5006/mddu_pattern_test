@@ -4,7 +4,6 @@
 
 // State & Transition Map
 #define STATE_MACHINE_N_STATES 4
-#define STATE_MACHINE_DEFAULT_STATE 0
 
 typedef enum {
     State_Off = 0,
@@ -47,24 +46,9 @@ static void DummyStateFnc() {};
 StateEntityStruct CreateStateEntity(StateFuncPtr ent, StateFuncPtr run, StateFuncPtr ext)
 {
     StateEntityStruct res;
-    if (ent != NULL) {
-        res.on_enter = ent;
-    }else{
-        res.on_enter = DummyStateFnc;
-    }
-
-    if (run != NULL) {
-        res.on_run = run;
-    }else{
-        res.on_run = DummyStateFnc;
-    }
-
-    if (ext != NULL) {
-        res.on_exit = ext;
-    }else{
-        res.on_exit = DummyStateFnc;
-    }
-
+    res.on_enter = (ent != NULL) ? ent : DummyStateFnc;
+    res.on_run =   (run != NULL) ? run : DummyStateFnc;
+    res.on_exit =  (ext != NULL) ? ext : DummyStateFnc;
     return res;
 }
 
@@ -76,41 +60,41 @@ typedef struct StateMachineStruct
     StateEnum prev_state;
     StateFuncPtr active_func;
 
-    StateEntityStruct state[STATE_MACHINE_N_STATES];
+    StateEntityStruct entity[STATE_MACHINE_N_STATES];
 } StateMachineStruct;
 
 
 // State Machine Interfaces
 void InitStateMachine(StateMachineStruct* sm)
 {
-    sm->curr_state = (StateEnum)STATE_MACHINE_DEFAULT_STATE;
-    sm->curr_state = (StateEnum)STATE_MACHINE_DEFAULT_STATE;
-    // TODO: NULL Check
-    sm->active_func = sm->state[STATE_MACHINE_DEFAULT_STATE].on_enter;
+    for (int i = 0; i < STATE_MACHINE_N_STATES; i++) {
+        sm->entity[i].on_enter = NULL;
+        sm->entity[i].on_run   = NULL;
+        sm->entity[i].on_exit  = NULL;
+    }
+    sm->active_func = NULL;
 }
 
-
 // TODO: NULL func ptr exception
-
 void RunStateMachine(StateMachineStruct* sm)
 {
     sm->active_func();
     
-    if (sm->active_func == sm->state[sm->curr_state].on_run) {
+
+    if (sm->active_func == sm->entity[sm->curr_state].on_run) {
         return;
     }
 
-    if (sm->active_func == sm->state[sm->curr_state].on_enter) {
-        sm->active_func =sm->state[sm->curr_state].on_run;
+    if (sm->active_func == sm->entity[sm->curr_state].on_enter) {
+        sm->active_func =sm->entity[sm->curr_state].on_run;
         return;
     }
 
-    if (sm->active_func == sm->state[sm->prev_state].on_exit) {
-        sm->active_func = sm->state[sm->curr_state].on_enter;
+    if (sm->active_func == sm->entity[sm->prev_state].on_exit) {
+        sm->active_func = sm->entity[sm->curr_state].on_enter;
         return;
     }
 }
-
 
 void StateTrainsition(StateMachineStruct* sm, StateEnum state_cmd)
 {
@@ -118,7 +102,7 @@ void StateTrainsition(StateMachineStruct* sm, StateEnum state_cmd)
     if (sm->curr_state != new_state) {
         sm->prev_state = sm->curr_state;
         sm->curr_state = new_state;
-        sm->active_func = sm->state[sm->prev_state].on_exit;
+        sm->active_func = sm->entity[sm->prev_state].on_exit;
     }
 }
 
