@@ -1,0 +1,75 @@
+@startuml
+'*--- State Machine ---*
+enum StateEnum {
+    Off
+    Disable
+    Enable
+    Error
+    next TransitionMap(curr, command)
+}
+
+class StateEntity {
+    StateFuncPtr func_on_enter
+    StateFuncPtr func_on_run
+    StateFuncPtr func_on_exit
+    StateEntityStruct CreateEntity(enter, run, exit)
+}
+
+class StateMachine {
+    StateEnum currnet_state
+    StateEnum previous_state
+    StateFuncPtr active_state_func
+    StateEntity entity[n_states]
+    void Init(void)
+    void Run(void)
+    void StateTransition(command)
+}
+
+StateMachine <-- StateEnum
+StateMachine <-- StateEntity
+
+
+'*--- Drive Routine ---*
+class RoutineEntity {
+    string routine_name
+    RoutineFuncPtr func
+    RoutineEntity CreateEntity(name, func)
+}
+
+class DriveRoutine {
+    int active_routine_id
+    size_t n_active_routines
+    RoutineFuncPtr entity[max_routines]
+    StateEntityStruct entity[n_states]
+    void Init(void)
+    void Run(void)
+    void ClearDriveRoutines(void)
+    int PushDriveRoutine(id)
+}
+
+DriveRoutine <-- RoutineEntity
+
+
+
+'*--- Device ---*
+class Device {
+    int device_id
+    string device_name
+    StateMachine state_machine
+    DriveRoutine drive_routine
+    void InitDevice(void)
+    void RunDevice(void)
+    void SetDeviceStateEntity(state, entity)
+    void SetDeviceRoutineEntity(id, entity)
+}
+
+Device <-- StateMachine
+Device <-- DriveRoutine
+
+
+'*--- Device Instance ---*
+object DeviceInstance
+
+DeviceInstance <|-- Device
+
+@enduml
