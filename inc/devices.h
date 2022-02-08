@@ -25,6 +25,11 @@ void InitDevice(DeviceStruct* dv)
     InitDriveRoutine(&dv->drive_routine);
 }
 
+void RunDevice(DeviceStruct* dv)
+{
+    RunStateMachine(&dv->state_machine);
+}
+
 void DeviceSetStateEntity(DeviceStruct* dv, StateEnum state, StateEntityStruct entity, bool is_default)
 {
     dv->state_machine.entity[state] = entity;

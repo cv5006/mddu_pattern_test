@@ -111,7 +111,7 @@ void UART_Init()
 
 void UART_Run()
 {
-    RunStateMachine(&uart_dv.state_machine);
+    RunDevice(&uart_dv);
 }
 
 #endif //UART_DEVICE_H_
