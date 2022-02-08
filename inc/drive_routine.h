@@ -6,6 +6,7 @@
 #include "stdlib.h"
 
 #define DRIVE_ROUTINE_MAX_ENTITIES 32
+#define DRIVE_ROUTINE_DEFAULT_ID -1
 
 // Routine Entity
 typedef int (*RoutineFncPtr) (void);
@@ -51,6 +52,25 @@ int RunDriveRoutines(DriveRoutineStruct* drv)
     }
 }
 
-//TODO: Set, clear routine id functions
+void ClearDriveRoutines(DriveRoutineStruct* drv)
+{
+    for (int i = 0; i < DRIVE_ROUTINE_MAX_ENTITIES; i++) {
+        drv->id[i] = DRIVE_ROUTINE_DEFAULT_ID;
+    }
+    drv->n_id = 0;
+}
+
+int PushDrviceRoutine(DriveRoutineStruct* drv, int id)
+{
+    if (drv->n_id >= DRIVE_ROUTINE_MAX_ENTITIES) {
+        return -1;
+    }
+
+    if (drv->entity[id].func == NULL) {
+        return -2;
+    }
+    drv->id[drv->n_id++] = id;
+}
+
 
 #endif //DRIVE_ROUTINE_H_

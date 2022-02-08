@@ -74,6 +74,10 @@ int UART_Routine_Hello()
     printf("UART Device: Hello UART!\n");
 }
 
+int UART_Routine_Bye()
+{
+    printf("UART Device: Bye UART!\n");
+}
 
 /*
   _   _  _   ___ _____   ___          _          ___     _            __             
@@ -99,11 +103,10 @@ void UART_Init()
 
     // Drive Routine
     RoutineEntityStruct uart_hello = CreateRoutineEntity("uart_hello", UART_Routine_Hello);
+    RoutineEntityStruct uart_bye = CreateRoutineEntity("uart_bye", UART_Routine_Bye);
 
     DeviceSetRoutineEntity(&uart_dv, 2, uart_hello);
-
-    // uart_dv.drive_routine.id[0] = 2;
-    // uart_dv.drive_routine.n_id = 1;
+    DeviceSetRoutineEntity(&uart_dv, 5, uart_bye);
 }
 
 void UART_Run()
