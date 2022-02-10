@@ -19,7 +19,7 @@ typedef struct RoutineEntityStruct {
 RoutineEntityStruct CreateRoutineEntity(char* name, RoutineFncPtr func)
 {
     RoutineEntityStruct res;
-    res.name = malloc(strlen(name));
+    res.name = (char*)malloc(strlen(name));
     strcpy(res.name, name);
     res.func = func;
     return res;
