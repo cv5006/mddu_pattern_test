@@ -2,9 +2,7 @@
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "files.associations": {
         "unistd.h": "c",
-        "threads.h": "c",
-        "devices.h": "c",
         "stdio.h": "c",
-        "uart_device.h": "c"
+        "pthread.h": "c"
     }
 }
