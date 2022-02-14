@@ -189,6 +189,11 @@ void ETH_Init()
     DeviceSetRoutineEntity(&eth_dv, 0, eth_accept);
     DeviceSetRoutineEntity(&eth_dv, 1, eth_recv);
     DeviceSetRoutineEntity(&eth_dv, 2, eth_send);
+
+    // MEMO: Default routines?
+    PushDrviceRoutine(&eth_dv.drive_routine, 0);
+    PushDrviceRoutine(&eth_dv.drive_routine, 1);
+    PushDrviceRoutine(&eth_dv.drive_routine, 2);
 }
 
 void ETH_Run()

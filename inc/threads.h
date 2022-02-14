@@ -5,25 +5,53 @@
 #include "time.h"
 #include "pthread.h"
 
+#include "eth_device.h"
+
+
 /* 
  * Simple emulator of FreeRTOS tasks.
  */
 
-void* Dafult_Task()
+
+#define THREADS_N_TASKS 2
+
+void* Dafult_Task(void* data)
 {    
     printf("DO SomeThing\n");
     sleep(1);
 }
 
 
-int ThreadsStart()
+void* ETH_Task(void*data)
 {
-    pthread_t default_task_ptr;
-    if (pthread_create(&default_task_ptr, NULL, Dafult_Task, NULL)) {return -1; }
-    
-    
+    ETH_Init();
+    for(;;) {
+        ETH_Run();
+        sleep(1);
+    }
+}
+
+
+
+int ThreadsStart()
+{    
+    pthread_t thread_ptr[THREADS_N_TASKS];
+    void* (*task_ptr[THREADS_N_TASKS])(void*);
+
+    task_ptr[0] = Dafult_Task;
+    task_ptr[1] = ETH_Task;
+
+    for (int i = 0; i < THREADS_N_TASKS; i++) {
+        if (pthread_create(&thread_ptr[i], NULL, task_ptr[i], NULL)) {
+            printf("Faild to create thread #%d\n", i);
+            return -1; 
+        }
+    }
+        
     int status;
-    pthread_join(default_task_ptr, (void**)&status);
+    for (int i = 0; i < THREADS_N_TASKS; i++) {
+        pthread_join(thread_ptr[i], (void**)&status);
+    }
 }
 
 #endif //THREADS_H_
