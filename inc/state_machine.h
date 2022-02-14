@@ -1,6 +1,7 @@
 #ifndef STATE_MACHINE_H_
 #define STATE_MACHINE_H_
 
+#include "unistd.h"
 
 // State & Transition Map
 #define STATE_MACHINE_N_STATES 4
