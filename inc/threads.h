@@ -1,27 +1,29 @@
 #ifndef THREADS_H_
 #define THREADS_H_
 
-#include "devices.h"
+#include "stdio.h"
+#include "time.h"
+#include "pthread.h"
 
 /* 
- * Simple model of rtos threads. 
- * Note this is not actual threads! 
+ * Simple emulator of FreeRTOS tasks.
  */
 
-void ETH_Task()
-{
-    printf("Hello, ETH!\n");
+void* Dafult_Task()
+{    
+    printf("DO SomeThing\n");
+    sleep(1);
 }
 
-void UART_Task()
-{
-    printf("Hello, UART!\n");
-}
 
-void JointsTask()
+int ThreadsStart()
 {
-    printf("Hello, Joints!\n");
+    pthread_t default_task_ptr;
+    if (pthread_create(&default_task_ptr, NULL, Dafult_Task, NULL)) {return -1; }
+    
+    
+    int status;
+    pthread_join(default_task_ptr, (void**)&status);
 }
-
 
 #endif //THREADS_H_
