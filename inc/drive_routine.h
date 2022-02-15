@@ -48,8 +48,12 @@ int RunDriveRoutines(DriveRoutineStruct* drv)
 {
     for (int i = 0; i < drv->n_id; i++){
         //TODO: routine func exception handling
-        drv->entity[drv->id[i]].func();
+        int res = drv->entity[drv->id[i]].func();
+        if (res < 0) {
+            return res;
+        }
     }
+    return 0;
 }
 
 void ClearDriveRoutines(DriveRoutineStruct* drv)
@@ -70,6 +74,7 @@ int PushDrviceRoutine(DriveRoutineStruct* drv, int id)
         return -2;
     }
     drv->id[drv->n_id++] = id;
+    return 0;
 }
 
 

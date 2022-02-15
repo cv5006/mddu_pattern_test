@@ -4,6 +4,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "errno.h"
+#include "time.h"
 
 #include "unistd.h"
 #include "netinet/in.h"
@@ -14,6 +15,11 @@
 
 
 #define ETH_BUFF_SIZE 1024
+#define ETH_PACKET_REQS 0
+#define ETH_PACKET_DVID 1
+#define ETH_PACKET_DAID 2
+#define ETH_PACKET_ARGS 3
+
 
 extern DeviceStruct eth_dv;
 
@@ -22,8 +28,8 @@ typedef struct ETH_Data
     int srvsock;
     int clisock;    
 
-    char rx_buff[ETH_BUFF_SIZE];
-    char tx_buff[ETH_BUFF_SIZE];
+    int8_t rx_buff[ETH_BUFF_SIZE];
+    int8_t tx_buff[ETH_BUFF_SIZE];
 } ETH_Data;
 
 ETH_Data eth_data;
@@ -51,6 +57,9 @@ void ETH_StateDisable_Ent()
     }else{
         printf("\n");
     }
+
+    printf("ETH Device: Restart ETH device.\n");
+    StateTrainsition(&eth_dv.state_machine, State_Enable);
 }
 
 void ETH_StateEnable_Ent()
@@ -92,7 +101,7 @@ void ETH_StateEnable_Ent()
 
 void ETH_StateEnable_Run()
 {
-    RunDriveRoutines(&eth_dv.drive_routine);
+    RunDriveRoutines(&eth_dv.drive_routine);    
 }
 
 void ETH_StateEnable_Ext()
@@ -104,6 +113,7 @@ void ETH_StateEnable_Ext()
 void ETH_StateError_Run()
 {
     printf("ETH Device: Error!\n");
+    DeviceDelay(&eth_dv);
 }
 
 
@@ -134,32 +144,140 @@ int ETH_Routine_Accept()
     return 0;
 }
 
+static void Protocol(int8_t* msg)
+{
+    /*
+    * |-------------------------- ETH Protocol --------------------------|
+    * |------------|------------|------------|------------|--------------|
+    * |   Header   |   byte 0   |   byte 1   |   byte 2   |   byte 3 ~   |
+    * |------------|------------|------------|------------|--------------|
+    * | Packet Len |  Req /Res  |  Device ID |  Data ID   |  Data array  |
+    * |------------|------------|------------|------------|--------------|
+    */
+
+    // Get/Set
+    bool is_set;
+    switch (msg[ETH_PACKET_REQS]) {
+        case 0: is_set = false; break;
+        case 1: is_set = true;  break;
+        default: printf("ETH Device: Invalid command %d\n", msg[ETH_PACKET_REQS]); return;
+    }
+
+    // Device ID
+    DeviceStruct* dev;
+    switch (msg[ETH_PACKET_DVID]) {
+    case 0: dev = &eth_dv; break;
+    case 1: dev = &uart_dv; break;
+    default: printf("ETH Device: Invalid devicd ID %d\n", msg[ETH_PACKET_DVID]); return;
+    }
+    
+    // Data ID
+    uint8_t data_id = msg[ETH_PACKET_DAID];
+    int res = 0;
+    if (is_set) {
+        switch (data_id) {
+        case 0:  // State
+            switch (msg[ETH_PACKET_ARGS]) {
+            case 0: StateTrainsition(&dev->state_machine, State_Off);     break;
+            case 1: StateTrainsition(&dev->state_machine, State_Disable); break;
+            case 2: StateTrainsition(&dev->state_machine, State_Enable);  break;
+            case 3: StateTrainsition(&dev->state_machine, State_Error);   break;
+            default: res = -1; return;
+            }
+            break;
+        case 1: // Drive routine
+            if (msg[ETH_PACKET_ARGS] < 0) {
+                ClearDriveRoutines(&dev->drive_routine);
+                break;
+            }
+            if (msg[ETH_PACKET_ARGS] < DRIVE_ROUTINE_MAX_ENTITIES) {
+                res = PushDrviceRoutine(&dev->drive_routine, msg[ETH_PACKET_ARGS]);
+                break;
+            }
+            res = -1;
+            break;
+        case 2: // Period
+            memcpy(&dev->period, &msg[ETH_PACKET_ARGS], 2);
+            break;
+        default:
+            printf("ETH Device: Invalid data ID\n");
+            res = -1;
+            return;
+            break;
+        }
+    }
+
+    eth_data.tx_buff[0] = 3;       // Packet Len
+    eth_data.tx_buff[1] = 0;       // Response
+    eth_data.tx_buff[2] = res;     // Device ID
+    eth_data.tx_buff[3] = data_id; // Data ID
+    eth_data.tx_buff[4] = 0;       // Dummy data
+    
+    switch (data_id) {
+    case 0: // State
+        eth_data.tx_buff[0] += 1;
+        memcpy(&eth_data.tx_buff[4], (uint8_t*)&dev->state_machine.curr_state, 1);
+        break;
+    case 1: // Drive routine
+        eth_data.tx_buff[0] += dev->drive_routine.n_id;
+        for (int i = 0 ; i < dev->drive_routine.n_id; i++) {
+            eth_data.tx_buff[4+i] = (uint8_t)dev->drive_routine.id[i];
+        }
+        break;
+    case 2: // Period
+        eth_data.tx_buff[0] += 2;
+        memcpy(&eth_data.tx_buff[4], &dev->period, 2);
+        break;
+    default:
+        printf("ETH Device: Invalid data ID\n"); res = -1;   return;
+        break;
+    }
+}
+
 int ETH_Routine_Recv()
 {
-    int recv_len = recv(eth_data.clisock, eth_data.rx_buff, ETH_BUFF_SIZE, 0);
+    int recv_len;
+    int packet_len;
+    recv_len = recv(eth_data.clisock, &packet_len, 1, 0);
     if (recv_len < 0) {
         printf("ETH Device: [Recv Error] %s\n", strerror(errno));
         return -1;
-    } 
+    }
     
     if (recv_len == 0) {
         printf("ETH Device: Client closed socket\n");
         close(eth_data.clisock);
         eth_data.clisock = 0;
-        return 0;
+        return -1;
     }
 
-    char* recv_data;
-    printf("ETH Device: [Recv: %d] %.*s\n", recv_len, recv_len, eth_data.rx_buff);
+    recv_len = recv(eth_data.clisock, eth_data.rx_buff, packet_len, 0);
+    printf("ETH Device: [Recv: %d] ", recv_len);
+    for (int i = 0; i < recv_len; i++) {
+        printf("%d ", eth_data.rx_buff[i]);
+    }
+    printf("\n");
+    Protocol(eth_data.rx_buff);
     return recv_len;
 }
 
 int ETH_Routine_Send()
 {
-
+    int send_len = eth_data.tx_buff[0];
+    printf("ETH Device: [Send: %d] ", send_len);
+    for (int i = 0; i < send_len; i++) {
+        printf("%d ", eth_data.tx_buff[i+1]);
+    }
+    printf("\n");
+    if (send(eth_data.clisock, eth_data.tx_buff, eth_data.tx_buff[0]+1, 0) < 0) {
+        printf("ETH Device: [Send Error] %s\n", strerror(errno));
+        return -1;
+    }
 }
 
+
 /*
+
   ___ _____ _  _   ___          _          ___     _            __             
  | __|_   _| || | |   \ _____ _(_)__ ___  |_ _|_ _| |_ ___ _ _ / _|__ _ __ ___ 
  | _|  | | | __ | | |) / -_) V / / _/ -_)  | || ' \  _/ -_) '_|  _/ _` / _/ -_)
@@ -169,6 +287,7 @@ int ETH_Routine_Send()
 void ETH_Init()
 {
     InitDevice(&eth_dv);
+    eth_dv.period = 1;
 
     // State Machine
     StateEntityStruct eth_off     = CreateStateEntity(ETH_StateOff_Ent,     NULL,                NULL               );

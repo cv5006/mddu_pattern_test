@@ -13,6 +13,7 @@
 typedef struct DeviceStruct {
     int id;
     char* name;
+    int period;
     StateMachineStruct state_machine;
     DriveRoutineStruct drive_routine;
 } DeviceStruct;
@@ -47,7 +48,10 @@ void DeviceSetRoutineEntity(DeviceStruct* dv, int id, RoutineEntityStruct entity
     dv->drive_routine.entity[id] = entity;
 }
 
-// void DeviceSetDriver
+void DeviceDelay(DeviceStruct* dv)
+{
+    usleep(dv->period * 1000);
+}
 
 
 #endif //DEVICES_H_

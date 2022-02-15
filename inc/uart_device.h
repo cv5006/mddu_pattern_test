@@ -2,6 +2,7 @@
 #define UART_DEVICE_H_
 
 #include "stdio.h"
+#include "time.h"
 
 #include "devices.h"
 
@@ -43,11 +44,8 @@ void UART_StateEnable_Ent()
 
 void UART_StateEnable_Run()
 {
-    // if (uart_dv.drive_routine.n_id < 1) {
-        // printf("UART Device: Nothing to execute\n");
-        // return;
-    // }
     RunDriveRoutines(&uart_dv.drive_routine);
+    DeviceDelay(&uart_dv);
 }
 
 void UART_StateEnable_Ext()
@@ -71,12 +69,12 @@ void UART_StateError_Run()
 
 int UART_Routine_Hello()
 {
-    printf("UART Device: Hello UART!\n");
+    printf("UART Device: Hello %d!\n", (int)time(NULL));
 }
 
 int UART_Routine_Bye()
 {
-    printf("UART Device: Bye UART!\n");
+    printf("UART Device: Bye   %d!\n", (int)time(NULL));
 }
 
 /*
@@ -89,6 +87,7 @@ int UART_Routine_Bye()
 void UART_Init()
 {
     InitDevice(&uart_dv);
+    uart_dv.period = 1000;
 
     // State Machine
     StateEntityStruct uart_off     = CreateStateEntity(UART_StateOff_Ent,     NULL,                  NULL);
@@ -104,7 +103,7 @@ void UART_Init()
     // Drive Routine
     RoutineEntityStruct uart_hello = CreateRoutineEntity("uart_hello", UART_Routine_Hello);
     RoutineEntityStruct uart_bye = CreateRoutineEntity("uart_bye", UART_Routine_Bye);
-
+    
     DeviceSetRoutineEntity(&uart_dv, 2, uart_hello);
     DeviceSetRoutineEntity(&uart_dv, 5, uart_bye);
 }
@@ -115,3 +114,4 @@ void UART_Run()
 }
 
 #endif //UART_DEVICE_H_
+
