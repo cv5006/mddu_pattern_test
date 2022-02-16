@@ -85,6 +85,12 @@ void ETH_Run();
  |___| |_| |_||_| |___/\___|\_/|_\__\___| |_| |_| |_|\_/\__,_|\__\___| |_| \_,_|_||_\__|\__|_\___/_||_/__/
                                                                                                           
 */
+static int SocketBegin();
+static int SocketAccept();
+static int SocketRecv();
+static int SocketSend();
 static void Protocol(int8_t* msg);
+static int SetActions(DeviceStruct* dev, int data_id, int8_t* data);
+static int GetActions(DeviceStruct* dev, int data_id, int8_t* data);
 
 #endif //ETH_DEVICE_H_
