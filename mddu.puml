@@ -1,18 +1,21 @@
 @startuml
+left to right direction
+
 '*--- State Machine ---*
+namespace state_machine.h{
 enum StateEnum {
     Off
     Disable
     Enable
     Error
-    next TransitionMap(curr, command)
+    StateEnum TransitionMap(curr, next)
 }
 
 class StateEntity {
     StateFuncPtr func_on_enter
     StateFuncPtr func_on_run
     StateFuncPtr func_on_exit
-    StateEntityStruct CreateEntity(enter, run, exit)
+    StateEntity CreateEntity(enter, run, exit)
 }
 
 class StateMachine {
@@ -22,14 +25,17 @@ class StateMachine {
     StateEntity entity[n_states]
     void Init(void)
     void Run(void)
-    void StateTransition(command)
+    void StateTransition(next)
 }
-
-StateMachine <-- StateEnum
-StateMachine <-- StateEntity
+' StateMachine <-- StateEnum
+' StateMachine <-- StateEntity
+StateEnum   --> StateMachine
+StateEntity --> StateMachine
+}
 
 
 '*--- Drive Routine ---*
+namespace drive_routine.h{
 class RoutineEntity {
     string routine_name
     RoutineFuncPtr func
@@ -47,11 +53,13 @@ class DriveRoutine {
     int PushDriveRoutine(id)
 }
 
-DriveRoutine <-- RoutineEntity
-
+' DriveRoutine <-- RoutineEntity
+RoutineEntity --> DriveRoutine
+}
 
 
 '*--- Device ---*
+namespace devices.h{
 class Device {
     int device_id
     string device_name
@@ -63,13 +71,29 @@ class Device {
     void SetDeviceRoutineEntity(id, entity)
 }
 
-Device <-- StateMachine
-Device <-- DriveRoutine
+' Device <-- state_machine.h.StateMachine
+' Device <-- drive_routine.h.DriveRoutine
+state_machine.h.StateMachine --> Device
+drive_routine.h.DriveRoutine --> Device
+}
 
 
 '*--- Device Instance ---*
-object DeviceInstance
+object ETH_Device {
+    ETH_Init()
+    ETH_Run()
+}
+object UART_Device {
+    UART_Init()
+    UART_Run()
+}
+object Other_Device_Instances {
+    Init()
+    Run()
+}
 
-DeviceInstance <|-- Device
+devices.h.Device --|> ETH_Device
+devices.h.Device --|> UART_Device
+devices.h.Device --|> Other_Device_Instances
 
 @enduml
