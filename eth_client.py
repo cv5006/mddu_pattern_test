@@ -17,10 +17,14 @@ def DictString(dict:dict):
     return out_str
 
 def ByteSize(data):
-    if data == 0:
-        return 1
+    abs_data = abs(data)
+    return int(log2(abs_data)//8)+1 if abs_data > 0 else 1
+
+def SignedByte(data):
+    if data > 255:
+        raise ValueError
     
-    return int(log2(abs(data))//8)+1
+    return (data - 256) if (data > 127) else data
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cli:
     try:
@@ -65,11 +69,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cli:
             cli.send(cmd_byte)
             n_data = int.from_bytes(cli.recv(1), 'little')
             res_list = list(cli.recv(n_data+1))
+            res_list[0] = SignedByte(res_list[0])
 
             print(f'Recv Res: {res_list}')
             print()
 
-            result = 'Success' if (res_list[0] == 0) else 'Failed'
+            result = 'Success' if (res_list[0] >= 0) else 'Failed'
             print(f'Request   Result : {result}')
             print(f'Responsed Device : {devs[res_list[1]]}')
             print(f'Responsed Data ID: {dats[res_list[2]]}')
