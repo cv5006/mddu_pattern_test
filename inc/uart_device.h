@@ -21,43 +21,20 @@ typedef struct UART_Data
   \___/_/ \_\_|_\ |_|   |___/\__\__,_|\__\___| |_| \_,_|_||_\__|\__|_\___/_||_/__/
                                                                                   
 */
-void UART_StateOff_Ent()
-{
-    printf("UART Device: Turnning Off\n");
-}
+// Off state
+void UART_StateOff_Ent();
 
-void UART_StateDisable_Ent()
-{
-    printf("UART Device: Turnning On\n");
-}
+// Disable state
+void UART_StateDisable_Ent();
+void UART_StateDisable_Run();
 
-void UART_StateDisable_Run()
-{
-    printf("UART Device: Self Enabling\n");
-    StateTrainsition(&uart_dv.state_machine, State_Enable);
-}
+// Enable state
+void UART_StateEnable_Ent();
+void UART_StateEnable_Run();
+void UART_StateEnable_Ext();
 
-void UART_StateEnable_Ent()
-{
-    printf("UART Device: Device is now Running!\n");
-}
-
-void UART_StateEnable_Run()
-{
-    RunDriveRoutines(&uart_dv.drive_routine);
-    DeviceDelay(&uart_dv);
-}
-
-void UART_StateEnable_Ext()
-{
-    printf("UART Device: Stop\n");
-}
-
-void UART_StateError_Run()
-{
-    printf("UART Device: Error!\n");
-}
-
+// Error state
+void UART_StateError_Run();
 
 /*
   _   _  _   ___ _____   ___      _           ___          _   _             
@@ -67,15 +44,8 @@ void UART_StateError_Run()
                                                                              
 */
 
-int UART_Routine_Hello()
-{
-    printf("UART Device: Hello %d!\n", (int)time(NULL));
-}
-
-int UART_Routine_Bye()
-{
-    printf("UART Device: Bye   %d!\n", (int)time(NULL));
-}
+int UART_Routine_Hello();
+int UART_Routine_Bye();
 
 /*
   _   _  _   ___ _____   ___          _          ___     _            __             
@@ -84,34 +54,8 @@ int UART_Routine_Bye()
   \___/_/ \_\_|_\ |_|   |___/\___|\_/|_\__\___| |___|_||_\__\___|_| |_| \__,_\__\___|
                                                                                      
 */ 
-void UART_Init()
-{
-    InitDevice(&uart_dv);
-    uart_dv.period = 1000;
-
-    // State Machine
-    StateEntityStruct uart_off     = CreateStateEntity(UART_StateOff_Ent,     NULL,                  NULL);
-    StateEntityStruct uart_enable  = CreateStateEntity(UART_StateEnable_Ent,  UART_StateEnable_Run,  UART_StateEnable_Ext);
-    StateEntityStruct uart_disable = CreateStateEntity(UART_StateDisable_Ent, UART_StateDisable_Run, NULL);
-    StateEntityStruct uart_error   = CreateStateEntity(NULL,                  UART_StateError_Run,   NULL);
-
-    DeviceSetStateEntity(&uart_dv, State_Off,     uart_off,     true);
-    DeviceSetStateEntity(&uart_dv, State_Disable, uart_disable, false);
-    DeviceSetStateEntity(&uart_dv, State_Enable,  uart_enable,  false);
-    DeviceSetStateEntity(&uart_dv, State_Error,   uart_error,   false);
-
-    // Drive Routine
-    RoutineEntityStruct uart_hello = CreateRoutineEntity("uart_hello", UART_Routine_Hello);
-    RoutineEntityStruct uart_bye = CreateRoutineEntity("uart_bye", UART_Routine_Bye);
-    
-    DeviceSetRoutineEntity(&uart_dv, 2, uart_hello);
-    DeviceSetRoutineEntity(&uart_dv, 5, uart_bye);
-}
-
-void UART_Run()
-{
-    RunDevice(&uart_dv);
-}
+void UART_Init();
+void UART_Run();
 
 #endif //UART_DEVICE_H_
 

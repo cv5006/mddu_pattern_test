@@ -10,6 +10,13 @@ find_package(Threads REQUIRED)
 
 include_directories(inc)
 
-add_executable(main src/main.c)
+add_executable(main
+src/main.c
+src/state_machine.c
+src/drive_routine.c
+src/devices.c
+src/threads.c
+src/uart_device.c
+src/eth_device.c)
 target_link_libraries(main PRIVATE Threads::Threads)
 
