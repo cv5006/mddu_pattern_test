@@ -237,12 +237,13 @@ static void Protocol(int8_t* msg)
     */
 
     // Get/Set
+    int8_t cmd = msg[ETH_PACKET_REQS];
     bool is_set;
-    switch (msg[ETH_PACKET_REQS]) {
+    switch (cmd) {
         case 0: is_set = false; break;
         case 1: is_set = true;  break;
         default: 
-            printf("ETH Device: Invalid command %d\n", msg[ETH_PACKET_REQS]); 
+            printf("ETH Device: Invalid command %d\n", cmd); 
             return;
     }
 
@@ -253,7 +254,7 @@ static void Protocol(int8_t* msg)
     case 0: dev = &eth_dv; break;
     case 1: dev = &uart_dv; break;
     default: 
-        printf("ETH Device: Invalid devicd ID %d\n", msg[ETH_PACKET_DVID]); 
+        printf("ETH Device: Invalid devicd ID %d\n", dev_id); 
         return;
     }
     
@@ -290,7 +291,7 @@ static int SetActions(DeviceStruct* dev, int data_id, int8_t* data)
         case 3: StateTrainsition(&dev->state_machine, State_Error);   break;
         default: return -1;
         }
-        break;
+        return 0;
     case 1: // Drive routine
         if (data[0] < 0) {
             ClearDriveRoutines(&dev->drive_routine);
