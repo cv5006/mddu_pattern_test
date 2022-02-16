@@ -40,6 +40,7 @@ void InitStateMachine(StateMachineStruct* sm)
         sm->entity[i].on_exit  = NULL;
     }
     sm->active_func = NULL;
+    sm->slc = StateLifeCycle_Ent;
 }
 
 // TODO: NULL func ptr exception
@@ -47,19 +48,17 @@ void RunStateMachine(StateMachineStruct* sm)
 {
     sm->active_func();
     
-
-    if (sm->active_func == sm->entity[sm->curr_state].on_run) {
-        return;
-    }
-
-    if (sm->active_func == sm->entity[sm->curr_state].on_enter) {
+    switch (sm->slc) {
+    case StateLifeCycle_Ent:
         sm->active_func =sm->entity[sm->curr_state].on_run;
-        return;
-    }
-
-    if (sm->active_func == sm->entity[sm->prev_state].on_exit) {
+        sm->slc = StateLifeCycle_Run;
+        break;
+    case StateLifeCycle_Ext:
         sm->active_func = sm->entity[sm->curr_state].on_enter;
-        return;
+        sm->slc = StateLifeCycle_Ent;
+        break;
+    default: // if Running, do nothing
+        break;
     }
 }
 
@@ -70,5 +69,6 @@ void StateTrainsition(StateMachineStruct* sm, StateEnum state_cmd)
         sm->prev_state = sm->curr_state;
         sm->curr_state = new_state;
         sm->active_func = sm->entity[sm->prev_state].on_exit;
+        sm->slc = StateLifeCycle_Ext;
     }
 }

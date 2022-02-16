@@ -32,11 +32,18 @@ StateEntityStruct CreateStateEntity(StateFuncPtr ent, StateFuncPtr run, StateFun
 
 
 // State Machine
+typedef enum {
+    StateLifeCycle_Ent,
+    StateLifeCycle_Run,
+    StateLifeCycle_Ext,
+} StateLifeCycleEnum;
+
 typedef struct StateMachineStruct
 {
     StateEnum curr_state;
     StateEnum prev_state;
     StateFuncPtr active_func;
+    StateLifeCycleEnum slc;
 
     StateEntityStruct entity[STATE_MACHINE_N_STATES];
 } StateMachineStruct;
