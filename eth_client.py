@@ -39,11 +39,20 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cli:
         i += 1
         print(f'------------ SendRecv #{i} ------------')
         try:
-            req = int(input(f'Enter the Request\t {DictString(reqs)} \n>> '))
-            dev = int(input(f'Enter the Device ID\t {DictString(devs)} \n>> '))
-            dat = int(input(f'Enter the Data ID\t {DictString(dats)} \n>> '))
+            req = int(input(f'Enter the Request\t{DictString(reqs)}\n>> '))
+            dev = int(input(f'Enter the Device ID\t{DictString(devs)}\n>> '))
+            dat = int(input(f'Enter the Data ID\t{DictString(dats)}\n>> '))
             if reqs[req] == 'Set':
-                arg = int(input(f'Enter the Argument\t \n>> '))
+                argmsg = ''
+                if dats[dat] == 'State':
+                    argmsg = '0: Off, 1: Disable, 2: Enable, 3: Error'
+                elif dats[dat] == 'Routines':
+                    if devs[dev] == 'UART':
+                        argmsg = '2: Hello, 5: Bye'
+                elif dats[dat] == 'Period':
+                    argmsg = 'Desired loop period in ms'
+
+                arg = int(input(f'Enter the Argument\t{argmsg}\n>> '))
             else:
                 arg = 0
 
