@@ -87,13 +87,13 @@ object UART_Device {
     UART_Init()
     UART_Run()
 }
-object Other_Device_Instances {
+object OtherDevices {
     Init()
     Run()
 }
 
 devices.h.Device --|> ETH_Device
 devices.h.Device --|> UART_Device
-devices.h.Device --|> Other_Device_Instances
+devices.h.Device --|> OtherDevices
 
 @enduml
