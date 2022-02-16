@@ -62,9 +62,7 @@ void ETH_StateError_Run();
                                                                        
 */
 
-int ETH_Routine_Accept();
-int ETH_Routine_Recv();
-int ETH_Routine_Send();
+int ETH_Routine_Echo();
 
 
 /*
