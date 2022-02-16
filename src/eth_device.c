@@ -229,8 +229,9 @@ static void Protocol(int8_t* msg)
     }
 
     // Device ID
+    uint8_t dev_id = msg[ETH_PACKET_DVID];
     DeviceStruct* dev;
-    switch (msg[ETH_PACKET_DVID]) {
+    switch (dev_id) {
     case 0: dev = &eth_dv; break;
     case 1: dev = &uart_dv; break;
     default: printf("ETH Device: Invalid devicd ID %d\n", msg[ETH_PACKET_DVID]); return;
@@ -273,8 +274,8 @@ static void Protocol(int8_t* msg)
     }
 
     eth_data.tx_buff[0] = 3;       // Packet Len
-    eth_data.tx_buff[1] = 0;       // Response
-    eth_data.tx_buff[2] = res;     // Device ID
+    eth_data.tx_buff[1] = res;     // Response
+    eth_data.tx_buff[2] = dev_id;  // Device ID
     eth_data.tx_buff[3] = data_id; // Data ID
     eth_data.tx_buff[4] = 0;       // Dummy data
     
