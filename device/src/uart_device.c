@@ -34,7 +34,6 @@ void UART_StateEnable_Ent()
 void UART_StateEnable_Run()
 {
     RunDriveRoutines(&uart_dv.drive_routine);
-    DeviceDelay(&uart_dv);
 }
 
 void UART_StateEnable_Ext()
@@ -100,4 +99,6 @@ void UART_Init()
 void UART_Run()
 {
     RunDevice(&uart_dv);
+    DeviceDelay(&uart_dv);
+
 }

@@ -57,7 +57,6 @@ void ETH_StateEnable_Ext()
 void ETH_StateError_Run()
 {
     printf("ETH Device: Error!\n");
-    DeviceDelay(&eth_dv);
 }
 
 
@@ -120,6 +119,7 @@ void ETH_Init()
 void ETH_Run()
 {
     RunDevice(&eth_dv);
+    DeviceDelay(&eth_dv);
 }
 
 
