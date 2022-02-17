@@ -5,9 +5,11 @@ SRV_IP = '127.0.0.1'
 SRV_PORT = 8765
 SRV_ADDR = (SRV_IP, SRV_PORT)
 
-reqs = {0:'Get', 1:'Set'}
-devs = {0:'ETH', 1:'UART'}
+reqs = {0:'Get',   1:'Set'}
+devs = {0:'ETH',   1:'UART'}
 dats = {0:'State', 1:'Routines', 2:'Period'}
+stts = {0:'Off',   1:'Disable',  2:'Enable', 3:'Error'}
+rtns = {-1:'Clear all', 2: 'Hello', 5: 'Bye'}
 
 def DictString(dict:dict):
     out_str = ''
@@ -45,10 +47,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cli:
             if reqs[req] == 'Set':
                 argmsg = ''
                 if dats[dat] == 'State':
-                    argmsg = '0: Off, 1: Disable, 2: Enable, 3: Error'
+                    argmsg = DictString(stts)
                 elif dats[dat] == 'Routines':
-                    if devs[dev] == 'UART':
-                        argmsg = '2: Hello, 5: Bye'
+                    argmsg = DictString(rtns) if (devs[dev] == 'UART') else ''
                 elif dats[dat] == 'Period':
                     argmsg = 'Desired loop period in ms'
 
