@@ -15,13 +15,13 @@ ETH_Data eth_data;
 
 void ETH_StateOff_Ent()
 {
-    printf("ETH Device: Turned off. Go to Disable state\n");
-    StateTrainsition(&eth_dv.state_machine, State_Disable);
+    printf("ETH Device: Turned off. Go to Standby state\n");
+    StateTrainsition(&eth_dv.state_machine, State_Standby);
 }
 
-void ETH_StateDisable_Ent()
+void ETH_StateStandby_Ent()
 {
-    printf("ETH Device: Disabled. ");
+    printf("ETH Device: Standbyd. ");
 
     if (eth_data.srvsock) {
         close(eth_data.srvsock);
@@ -39,7 +39,7 @@ void ETH_StateEnable_Ent()
 {
     printf("ETH Device: Enabeld. Socket creation begin\n");
     if (SocketBegin() < 0) {
-        StateTrainsition(&eth_dv.state_machine, State_Disable);
+        StateTrainsition(&eth_dv.state_machine, State_Standby);
     }
 }
 
@@ -98,12 +98,12 @@ void ETH_Init()
 
     // State Machine
     StateEntityStruct eth_off     = CreateStateEntity(ETH_StateOff_Ent,     NULL,                NULL               );
-    StateEntityStruct eth_disable = CreateStateEntity(ETH_StateDisable_Ent, NULL,                NULL               );
+    StateEntityStruct eth_standby = CreateStateEntity(ETH_StateStandby_Ent, NULL,                NULL               );
     StateEntityStruct eth_enable  = CreateStateEntity(ETH_StateEnable_Ent,  ETH_StateEnable_Run, ETH_StateEnable_Ext);
     StateEntityStruct eth_error   = CreateStateEntity(NULL,                 ETH_StateError_Run,  NULL               );
 
     DeviceSetStateEntity(&eth_dv, State_Off,     eth_off,     false);
-    DeviceSetStateEntity(&eth_dv, State_Disable, eth_disable, false);
+    DeviceSetStateEntity(&eth_dv, State_Standby, eth_standby, false);
     DeviceSetStateEntity(&eth_dv, State_Enable,  eth_enable,  true);
     DeviceSetStateEntity(&eth_dv, State_Error,   eth_error,   false);
 
@@ -174,7 +174,7 @@ static int SocketAccept()
     eth_data.clisock = accept(eth_data.srvsock, (struct sockaddr *) &cliaddr, (socklen_t *) &cliaddr_size);
     if(eth_data.clisock < 0) {
         printf("ETH Device: [Accept Error] %s\n", strerror(errno));
-        StateTrainsition(&eth_dv.state_machine, State_Disable);
+        StateTrainsition(&eth_dv.state_machine, State_Standby);
         return -1;
     }
 
@@ -286,7 +286,7 @@ static int SetActions(DeviceStruct* dev, int data_id, int8_t* data)
     case 0:  // State
         switch (data[0]) {
         case 0: StateTrainsition(&dev->state_machine, State_Off);     break;
-        case 1: StateTrainsition(&dev->state_machine, State_Disable); break;
+        case 1: StateTrainsition(&dev->state_machine, State_Standby); break;
         case 2: StateTrainsition(&dev->state_machine, State_Enable);  break;
         case 3: StateTrainsition(&dev->state_machine, State_Error);   break;
         default: return -1;

@@ -19,7 +19,6 @@ void DeviceSetStateEntity(DeviceStruct* dv, StateEnum state, StateEntityStruct e
     if (is_default) {
         dv->state_machine.curr_state = state;
         dv->state_machine.prev_state = state;
-        dv->state_machine.active_func = entity.on_enter;
     }
 }
 
@@ -31,5 +30,5 @@ void DeviceSetRoutineEntity(DeviceStruct* dv, int id, RoutineEntityStruct entity
 
 void DeviceDelay(DeviceStruct* dv)
 {
-    usleep(dv->period * 1000);
+    usleep(dv->period);
 }

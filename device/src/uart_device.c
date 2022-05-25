@@ -15,12 +15,12 @@ void UART_StateOff_Ent()
     printf("UART Device: Turnning Off\n");
 }
 
-void UART_StateDisable_Ent()
+void UART_StateStandby_Ent()
 {
     printf("UART Device: Turnning On\n");
 }
 
-void UART_StateDisable_Run()
+void UART_StateStandby_Run()
 {
     printf("UART Device: Self Enabling\n");
     StateTrainsition(&uart_dv.state_machine, State_Enable);
@@ -80,11 +80,11 @@ void UART_Init()
     // State Machine
     StateEntityStruct uart_off     = CreateStateEntity(UART_StateOff_Ent,     NULL,                  NULL);
     StateEntityStruct uart_enable  = CreateStateEntity(UART_StateEnable_Ent,  UART_StateEnable_Run,  UART_StateEnable_Ext);
-    StateEntityStruct uart_disable = CreateStateEntity(UART_StateDisable_Ent, UART_StateDisable_Run, NULL);
+    StateEntityStruct uart_standby = CreateStateEntity(UART_StateStandby_Ent, UART_StateStandby_Run, NULL);
     StateEntityStruct uart_error   = CreateStateEntity(NULL,                  UART_StateError_Run,   NULL);
 
     DeviceSetStateEntity(&uart_dv, State_Off,     uart_off,     true);
-    DeviceSetStateEntity(&uart_dv, State_Disable, uart_disable, false);
+    DeviceSetStateEntity(&uart_dv, State_Standby, uart_standby, false);
     DeviceSetStateEntity(&uart_dv, State_Enable,  uart_enable,  false);
     DeviceSetStateEntity(&uart_dv, State_Error,   uart_error,   false);
 

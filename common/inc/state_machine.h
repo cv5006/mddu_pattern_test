@@ -8,12 +8,10 @@
 
 typedef enum {
     State_Off = 0,
-    State_Disable = 1,
+    State_Standby = 1,
     State_Enable = 2,
     State_Error = 3,
 } StateEnum;
-
-static StateEnum TransitionMap(StateEnum curr, StateEnum cmd);
 
 
 // State Functions
@@ -26,7 +24,6 @@ typedef struct StateEntityStruct
     StateFuncPtr on_exit;
 } StateEntityStruct;
 
-static void DummyStateFnc() {};
 
 StateEntityStruct CreateStateEntity(StateFuncPtr ent, StateFuncPtr run, StateFuncPtr ext);
 
@@ -42,7 +39,6 @@ typedef struct StateMachineStruct
 {
     StateEnum curr_state;
     StateEnum prev_state;
-    StateFuncPtr active_func;
     StateLifeCycleEnum slc;
 
     StateEntityStruct entity[STATE_MACHINE_N_STATES];
