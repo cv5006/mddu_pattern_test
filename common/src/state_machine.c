@@ -49,7 +49,9 @@ void RunStateMachine(StateMachineStruct* sm)
         if (sm->entity[sm->curr_state].on_enter) {
             sm->entity[sm->curr_state].on_enter();
         }
-        sm->slc = StateLifeCycle_Run;
+        if (sm->slc == StateLifeCycle_Ent){
+            sm->slc = StateLifeCycle_Run;
+        }
         break;
 
     case StateLifeCycle_Run:
